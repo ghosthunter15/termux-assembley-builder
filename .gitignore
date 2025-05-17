@@ -1,0 +1,13 @@
+# Ignore build artifacts
+*.o
+*.elf
+*.bin
+*.svg
+*.map
+
+# Ignore executables
+hello
+
+# Ignore system files
+.DS_Store
+*.swp
