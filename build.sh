@@ -1,25 +1,36 @@
 #!/data/data/com.termux/files/usr/bin/bash
-
-# File: build_and_map.sh
-# Usage: ./build_and_map.sh yourfile.s
+# build.sh - cross-arch assembler for AArch64 and x86_64 & arm7
 
 set -e
 
-# Input file check
-if [ -z "$1" ]; then
-    echo "Usage: $0 yourfile.s"
-    exit 1
-fi
+SRC="${1:-hello.s}"
+ARCH="${2:-aarch64}"  # Default to aarch64
 
-SRC="$1"
 OBJ="${SRC%.s}.o"
-BIN="${SRC%.s}"
-LD_SCRIPT="link.ld"
+OUT="${SRC%.s}"
+LD_SCRIPT="link.${ARCH}.ld"
 
-# Step 1: Assemble
-as -o "$OBJ" "$SRC"
+# Toolchains
+case "$ARCH" in
+  aarch64)
+    AS=as
+    LD=ld
+    ;;
+  x86_64)
+    AS=x86_64-linux-android-as
+    LD=x86_64-linux-android-ld
+    ;;
+  armv7)
+    AS=arm-linux-androideabi-as
+    LD=arm-linux-androideabi-ld
+    ;;
+  *)
+    echo "Unsupported architecture: $ARCH"
+    exit 1
+    ;;
+esac
 
-# Step 2: Link with custom linker script if not already present
+# Generate basic linker script if missing
 if [ ! -f "$LD_SCRIPT" ]; then
 cat > "$LD_SCRIPT" <<EOF
 ENTRY(_start)
@@ -28,14 +39,17 @@ SECTIONS {
   .text : { *(.text) }
   .rodata : { *(.rodata*) }
   .data : { *(.data) }
-  .bss : { *(.bss COMMON) }
+  .bss  : { *(.bss COMMON) }
 }
 EOF
-else
-  echo "Using existing $LD_SCRIPT"
 fi
 
-ld -T "$LD_SCRIPT" -o "$BIN" "$OBJ"
+# Assemble and Link
+$AS -g -o "$OBJ" "$SRC"
+$LD -T "$LD_SCRIPT" -o "$OUT" "$OBJ"
+echo "Built $OUT for $ARCH"
+size -A "$OUT"
+
 
 # Step 3: Print layout summary
 echo "=== Section Sizes ==="
