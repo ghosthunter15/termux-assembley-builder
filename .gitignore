@@ -1,13 +1,29 @@
-# Ignore build artifacts
-*.o
-*.elf
-*.bin
-*.svg
-*.map
+# Go build files
+kali-gpgfix
+*.exe
+*.out
 
-# Ignore executables
-hello
+# Python
+__pycache__/
+*.pyc
 
-# Ignore system files
-.DS_Store
+# Shell
 *.swp
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+*.old
+*~
+
+# Editors
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
